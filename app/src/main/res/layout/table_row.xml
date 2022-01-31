@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <variable
+            name="model"
+            type="com.socialcafe.models.TableModel" />
+
+        <import type="android.view.View" />
+    </data>
+
+    <FrameLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable='@{model.is_busy?false:true}'>
+
+        <LinearLayout
+            android:id="@+id/ll"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:orientation="vertical"
+            android:padding="7dp">
+
+            <ImageView
+
+                image="@{model.photo}"
+                type="@{4}"
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_gravity="center" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="5dp"
+                android:gravity="center"
+                android:lines="2"
+                android:text="@{model.name}"
+                android:textColor="@color/black"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="90dp"
+            android:layout_height="100dp"
+            android:layout_gravity="center"
+            android:background="@color/trans_black"
+            android:visibility='@{model.is_busy?View.VISIBLE:View.GONE,default=gone}' />
+
+        <ImageView
+
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_lock"
+            android:visibility='@{model.is_busy?View.VISIBLE:View.GONE,default=gone}'
+            app:tint="@color/white" />
+
+    </FrameLayout>
+</layout>
