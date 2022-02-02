@@ -97,4 +97,6 @@
     <string name="my_orders">Orders</string>
     <string name="end_order">End Order</string>
     <string name="previous_orders">Previous Orders</string>
+    <string name="products">Products</string>
+    <string name="edit">Edit</string>
 </resources>

@@ -3,9 +3,14 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
-        <entry key="..\:/SocialCafe/app/src/main/res/layout/activity_home.xml" value="0.13541666666666666" />
+        <entry key="..\:/SocialCafe/app/src/main/res/drawable/gradient_bg.xml" value="0.15885416666666666" />
+        <entry key="..\:/SocialCafe/app/src/main/res/layout/activity_cash_register_details.xml" value="0.1" />
+        <entry key="..\:/SocialCafe/app/src/main/res/layout/activity_home.xml" value="0.1" />
         <entry key="..\:/SocialCafe/app/src/main/res/layout/activity_invoice.xml" value="0.25" />
+        <entry key="..\:/SocialCafe/app/src/main/res/layout/activity_order_details.xml" value="0.25" />
+        <entry key="..\:/SocialCafe/app/src/main/res/layout/current_order_row.xml" value="0.14270833333333333" />
         <entry key="..\:/SocialCafe/app/src/main/res/layout/product_bill_row.xml" value="0.13541666666666666" />
+        <entry key="..\:/SocialCafe/app/src/main/res/layout/small_round_gray9.xml" value="0.12395833333333334" />
         <entry key="..\:/SocialCafe/app/src/main/res/layout/table_row.xml" value="0.14270833333333333" />
         <entry key="..\:/Users/EL MOTWRON/Desktop/LandDonutDelivery/app/src/main/res/drawable-/ic_phone.xml" value="0.15364583333333334" />
         <entry key="..\:/Users/EL MOTWRON/Desktop/LandDonutDelivery/app/src/main/res/drawable-/rounded_primary2.xml" value="0.15364583333333334" />

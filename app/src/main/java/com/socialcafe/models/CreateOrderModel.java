@@ -38,6 +38,7 @@ public class CreateOrderModel implements Serializable {
     private double order_tax_rate;
     private String shipping_cost;
     private String table_id;
+    private String sale_id;
     private List<ItemCartModel> details;
 
     public int getUser_id() {
@@ -318,5 +319,13 @@ public class CreateOrderModel implements Serializable {
 
     public void setDetails(List<ItemCartModel> details) {
         this.details = details;
+    }
+
+    public String getSale_id() {
+        return sale_id;
+    }
+
+    public void setSale_id(String sale_id) {
+        this.sale_id = sale_id;
     }
 }

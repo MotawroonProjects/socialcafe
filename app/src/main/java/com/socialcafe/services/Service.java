@@ -162,6 +162,7 @@ public interface Service {
     Call<TableDataModel> getTables();
     @GET("api/orders")
     Call<OrderDataModel> getOrders(
+            @Query("user_id") String user_id
 
     );
     @FormUrlEncoded

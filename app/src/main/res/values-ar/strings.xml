@@ -97,4 +97,6 @@
     <string name="my_orders">الطلبات الحاليه</string>
     <string name="end_order">انهاء الطلب</string>
     <string name="previous_orders">الطلبات السابقه</string>
+    <string name="products">Products</string>
+    <string name="edit">تعديل</string>
 </resources>

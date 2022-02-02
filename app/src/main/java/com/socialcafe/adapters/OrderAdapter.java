@@ -62,6 +62,15 @@ myHolder.binding.btnendorder.setOnClickListener(new View.OnClickListener() {
         }
     }
 });
+        myHolder.itemView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(context instanceof CurrentOrderActivity){
+                    CurrentOrderActivity orderActivity=(CurrentOrderActivity) context;
+                    orderActivity.showdetials(list.get(holder.getLayoutPosition()));
+                }
+            }
+        });
 //Log.e("eeee",list.get(position).getOffer_value()+""+(list.get(position).getAmount()%list.get(position).getOffer_min()));
         // Log.e("ssss",((list.get(position).getHave_offer().equals("yes")?(list.get(position).getOffer_type().equals("per")?(list.get(position).getProduct_default_price().getPrice()-((list.get(position).getProduct_default_price().getPrice()*list.get(position).getOffer_value())/100)):list.get(position).getProduct_default_price().getPrice()-list.get(position).getOffer_value()):list.get(position).getProduct_default_price().getPrice())+""));
 

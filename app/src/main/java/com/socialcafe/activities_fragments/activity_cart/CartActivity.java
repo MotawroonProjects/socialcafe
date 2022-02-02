@@ -279,6 +279,7 @@ public class CartActivity extends AppCompatActivity {
                     createOrder();
                 } else {
                     if (createOrderModel.getCustomer_id().equals("0")) {
+
                         Toast.makeText(CartActivity.this, getResources().getString(R.string.choose_customer), Toast.LENGTH_LONG).show();
                     }
                     if (createOrderModel.getTable_id() == null) {
@@ -377,7 +378,7 @@ public class CartActivity extends AppCompatActivity {
             createOrderModel.setSale_status("3");
             createOrderModel.setOrder_tax_rate(0);
             createOrderModel.setOrder_discount(0);
-            createOrderModel.setDraft("0");
+            createOrderModel.setDraft("1");
             createOrderModel.setBiller_id_hidden(userModel.getUser().getBiller_id() + "");
             createOrderModel.setBiller_id(userModel.getUser().getBiller_id() + "");
             createOrderModel.setDelivery_companies_id("");
@@ -595,7 +596,7 @@ public class CartActivity extends AppCompatActivity {
             createOrderModel.setSale_status("3");
             createOrderModel.setOrder_tax_rate(0);
             createOrderModel.setOrder_discount(0);
-            createOrderModel.setDraft("0");
+            createOrderModel.setDraft("1");
             createOrderModel.setBiller_id_hidden(userModel.getUser().getBiller_id() + "");
             createOrderModel.setBiller_id(userModel.getUser().getBiller_id() + "");
             createOrderModel.setDelivery_companies_id("");

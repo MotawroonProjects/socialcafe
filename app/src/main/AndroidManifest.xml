@@ -44,6 +44,10 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".activities_fragments.activity_order_details.OrderDetailsActivity"
+            android:configChanges="keyboardHidden|screenSize|orientation"
+            android:windowSoftInputMode="stateAlwaysHidden|adjustResize"/>
+        <activity
             android:name=".activities_fragments.activity_currentorder.CurrentOrderActivity"
             android:configChanges="keyboardHidden|screenSize|orientation"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize"/>

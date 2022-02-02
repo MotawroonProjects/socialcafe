@@ -15,6 +15,7 @@ import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.socialcafe.R;
+import com.socialcafe.activities_fragments.activity_order_details.OrderDetailsActivity;
 import com.socialcafe.adapters.OrderAdapter;
 import com.socialcafe.databinding.ActivityCurrentorderBinding;
 import com.socialcafe.language.Language;
@@ -106,7 +107,7 @@ public class CurrentOrderActivity extends AppCompatActivity {
             return;
         }
 
-        Api.getService(Tags.base_url).getOrders().
+        Api.getService(Tags.base_url).getOrders(userModel.getUser().getId()+"").
                 enqueue(new Callback<OrderDataModel>() {
                     @Override
                     public void onResponse(Call<OrderDataModel> call, Response<OrderDataModel> response) {
@@ -171,7 +172,7 @@ public class CurrentOrderActivity extends AppCompatActivity {
     }
 
 
-    public void endorder(int id) {
+    public void endorder(String id) {
         Api.getService(Tags.base_url).changeStatus(id + "")
                 .enqueue(new Callback<StatusResponse>() {
                     @Override
@@ -216,5 +217,11 @@ public class CurrentOrderActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    public void showdetials(OrderModel orderModel) {
+        Intent intent=new Intent(this, OrderDetailsActivity.class);
+        intent.putExtra("data",orderModel);
+        startActivity(intent);
     }
 }

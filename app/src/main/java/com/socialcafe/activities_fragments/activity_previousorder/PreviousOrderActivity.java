@@ -96,7 +96,7 @@ public class PreviousOrderActivity extends AppCompatActivity {
             return;
         }
 
-        Api.getService(Tags.base_url).getOrders().
+        Api.getService(Tags.base_url).getOrders(userModel.getUser().getId()+"").
                 enqueue(new Callback<OrderDataModel>() {
                     @Override
                     public void onResponse(Call<OrderDataModel> call, Response<OrderDataModel> response) {
