@@ -248,9 +248,7 @@ public class OrderDetailsActivity extends AppCompatActivity {
 
     public void createOrder() {
         try {
-            Gson gson = new Gson();
-            String user_data = gson.toJson(createOrderModel);
-            Log.e(";llll",user_data);
+
             ProgressDialog dialog = Common.createProgressDialog(this, getString(R.string.wait));
             dialog.setCancelable(false);
             dialog.setCanceledOnTouchOutside(false);
