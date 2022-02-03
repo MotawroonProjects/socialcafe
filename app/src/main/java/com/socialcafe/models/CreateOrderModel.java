@@ -38,7 +38,7 @@ public class CreateOrderModel implements Serializable {
     private double order_tax_rate;
     private String shipping_cost;
     private String table_id;
-    private String sale_id;
+    private String sale_id=null;
     private List<ItemCartModel> details;
 
     public int getUser_id() {

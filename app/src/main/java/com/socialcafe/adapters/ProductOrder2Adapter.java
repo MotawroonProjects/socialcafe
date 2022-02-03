@@ -2,7 +2,6 @@ package com.socialcafe.adapters;
 
 import android.content.Context;
 import android.view.LayoutInflater;
-import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
@@ -10,21 +9,21 @@ import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.socialcafe.R;
-import com.socialcafe.activities_fragments.activity_home.HomeActivity;
-import com.socialcafe.activities_fragments.activity_products.ProductsActivity;
-import com.socialcafe.databinding.MarkRowBinding;
-import com.socialcafe.models.BrandModel;
+import com.socialcafe.databinding.ProductOrderRow2Binding;
+import com.socialcafe.databinding.ProductOrderRowBinding;
+import com.socialcafe.models.ItemCartModel;
+import com.socialcafe.models.OrderModel;
 
 import java.util.List;
 
-public class MarkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class ProductOrder2Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private List<BrandModel> list;
+    private List<ItemCartModel> list;
     private Context context;
     private LayoutInflater inflater;
 
     //private Fragment_Main fragment_main;
-    public MarkAdapter(List<BrandModel> list, Context context) {
+    public ProductOrder2Adapter(List<ItemCartModel> list, Context context) {
         this.list = list;
         this.context = context;
         inflater = LayoutInflater.from(context);
@@ -38,7 +37,7 @@ public class MarkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
 
-        MarkRowBinding binding = DataBindingUtil.inflate(inflater, R.layout.mark_row, parent, false);
+        ProductOrderRow2Binding binding = DataBindingUtil.inflate(inflater, R.layout.product_order_row2, parent, false);
         return new MyHolder(binding);
 
 
@@ -51,19 +50,6 @@ public class MarkAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
         myHolder.binding.setModel(list.get(position));
 
-myHolder.itemView.setOnClickListener(new View.OnClickListener() {
-    @Override
-    public void onClick(View v) {
-        if(context instanceof HomeActivity){
-            HomeActivity activity=(HomeActivity) context;
-            activity.showBrand(list.get(holder.getLayoutPosition()).getId()+"");
-        }
-        else if (context instanceof ProductsActivity){
-            ProductsActivity activity=(ProductsActivity) context;
-            activity.showBrand(list.get(holder.getLayoutPosition()).getId()+"");
-        }
-    }
-});
 //Log.e("eeee",list.get(position).getOffer_value()+""+(list.get(position).getAmount()%list.get(position).getOffer_min()));
         // Log.e("ssss",((list.get(position).getHave_offer().equals("yes")?(list.get(position).getOffer_type().equals("per")?(list.get(position).getProduct_default_price().getPrice()-((list.get(position).getProduct_default_price().getPrice()*list.get(position).getOffer_value())/100)):list.get(position).getProduct_default_price().getPrice()-list.get(position).getOffer_value()):list.get(position).getProduct_default_price().getPrice())+""));
 
@@ -76,9 +62,9 @@ myHolder.itemView.setOnClickListener(new View.OnClickListener() {
     }
 
     public class MyHolder extends RecyclerView.ViewHolder {
-        public MarkRowBinding binding;
+        public ProductOrderRow2Binding binding;
 
-        public MyHolder(@NonNull MarkRowBinding binding) {
+        public MyHolder(@NonNull ProductOrderRow2Binding binding) {
             super(binding.getRoot());
             this.binding = binding;
 

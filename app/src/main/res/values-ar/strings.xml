@@ -97,6 +97,11 @@
     <string name="my_orders">الطلبات الحاليه</string>
     <string name="end_order">انهاء الطلب</string>
     <string name="previous_orders">الطلبات السابقه</string>
-    <string name="products">Products</string>
+    <string name="products">المنتجات</string>
     <string name="edit">تعديل</string>
+    <string name="add_product">اضافة منتج</string>
+    <string name="ok">اقبل</string>
+    <string name="order_detials">تفاصيل الطلب</string>
+    <string name="change_table">تغيير الطاوله</string>
+    <string name="tables">الطاولات</string>
 </resources>

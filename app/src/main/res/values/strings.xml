@@ -99,4 +99,9 @@
     <string name="previous_orders">Previous Orders</string>
     <string name="products">Products</string>
     <string name="edit">Edit</string>
+    <string name="add_product">Add Product</string>
+    <string name="ok">Ok</string>
+    <string name="order_detials">Order Detials</string>
+    <string name="change_table">Change Table</string>
+    <string name="tables">Tables</string>
 </resources>

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.socialcafe.R;
 import com.socialcafe.activities_fragments.activity_home.HomeActivity;
+import com.socialcafe.activities_fragments.activity_products.ProductsActivity;
 import com.socialcafe.databinding.HomeRowBinding;
 import com.socialcafe.models.CategoryModel;
 
@@ -50,38 +51,49 @@ public class HomeAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         MyHolder myHolder = (MyHolder) holder;
         ((MyHolder) holder).binding.progBarCategory.setVisibility(View.GONE);
 
-        CategoryAdapter categoryAdapter=new CategoryAdapter(list,context);
-((MyHolder) holder).binding.recviewCategory.setLayoutManager(new LinearLayoutManager(context,RecyclerView.HORIZONTAL,false));
-((MyHolder) holder).binding.recviewCategory.setAdapter(categoryAdapter);
-if(list.size()==0){
-    ((MyHolder) holder).binding.tvNoDataCategory.setVisibility(View.VISIBLE);
-}
-else {
-    ((MyHolder) holder).binding.tvNoDataCategory.setVisibility(View.GONE);
+        CategoryAdapter categoryAdapter = new CategoryAdapter(list, context);
+        ((MyHolder) holder).binding.recviewCategory.setLayoutManager(new LinearLayoutManager(context, RecyclerView.HORIZONTAL, false));
+        ((MyHolder) holder).binding.recviewCategory.setAdapter(categoryAdapter);
+        if (list.size() == 0) {
+            ((MyHolder) holder).binding.tvNoDataCategory.setVisibility(View.VISIBLE);
+        } else {
+            ((MyHolder) holder).binding.tvNoDataCategory.setVisibility(View.GONE);
 
-}
+        }
         ((MyHolder) holder).binding.llTrasmark.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //  categoryid="0";
-                if(context instanceof HomeActivity){
-                    HomeActivity activity=(HomeActivity)context;
-                activity.openSheet();}
+                if (context instanceof HomeActivity) {
+                    HomeActivity activity = (HomeActivity) context;
+                    activity.openSheet();
+                }
+                else if (context instanceof ProductsActivity){
+                    ProductsActivity activity=(ProductsActivity) context;
+                    activity.openSheet();
+                }
             }
         });
         ((MyHolder) holder).binding.llFeatured.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 //categoryid="0";
-                if(context instanceof HomeActivity){
+                if (context instanceof HomeActivity) {
 
-                    HomeActivity activity=(HomeActivity)context;
-                    activity.category_id=0;
+                    HomeActivity activity = (HomeActivity) context;
+                    activity.category_id = 0;
 
                     activity.getProdusts("0", "0", "1");
-            }}
+                }else   if (context instanceof ProductsActivity) {
+
+                    ProductsActivity activity = (ProductsActivity) context;
+                    activity.category_id = 0;
+
+                    activity.getProdusts("0", "0", "1");
+                }
+            }
         });
-      //  myHolder.binding.setModel(list.get(position));
+        //  myHolder.binding.setModel(list.get(position));
 
 //Log.e("eeee",list.get(position).getOffer_value()+""+(list.get(position).getAmount()%list.get(position).getOffer_min()));
         // Log.e("ssss",((list.get(position).getHave_offer().equals("yes")?(list.get(position).getOffer_type().equals("per")?(list.get(position).getProduct_default_price().getPrice()-((list.get(position).getProduct_default_price().getPrice()*list.get(position).getOffer_value())/100)):list.get(position).getProduct_default_price().getPrice()-list.get(position).getOffer_value()):list.get(position).getProduct_default_price().getPrice())+""));

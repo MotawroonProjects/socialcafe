@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.socialcafe.R;
 import com.socialcafe.activities_fragments.activity_add_customer.AddCustomerActivity;
+import com.socialcafe.activities_fragments.activity_currentorder.CurrentOrderActivity;
 import com.socialcafe.activities_fragments.activity_invoice.InvoiceActivity;
 import com.socialcafe.adapters.CartAdapter;
 import com.socialcafe.adapters.SpinnerCustomerAdapter;
@@ -378,7 +379,7 @@ public class CartActivity extends AppCompatActivity {
             createOrderModel.setSale_status("3");
             createOrderModel.setOrder_tax_rate(0);
             createOrderModel.setOrder_discount(0);
-            createOrderModel.setDraft("1");
+            createOrderModel.setDraft("0");
             createOrderModel.setBiller_id_hidden(userModel.getUser().getBiller_id() + "");
             createOrderModel.setBiller_id(userModel.getUser().getBiller_id() + "");
             createOrderModel.setDelivery_companies_id("");
@@ -596,7 +597,7 @@ public class CartActivity extends AppCompatActivity {
             createOrderModel.setSale_status("3");
             createOrderModel.setOrder_tax_rate(0);
             createOrderModel.setOrder_discount(0);
-            createOrderModel.setDraft("1");
+            createOrderModel.setDraft("0");
             createOrderModel.setBiller_id_hidden(userModel.getUser().getBiller_id() + "");
             createOrderModel.setBiller_id(userModel.getUser().getBiller_id() + "");
             createOrderModel.setDelivery_companies_id("");
@@ -612,8 +613,7 @@ public class CartActivity extends AppCompatActivity {
             binding.tv.setVisibility(View.GONE);
             binding.recViewtable.setVisibility(View.GONE);
         }
-        Intent intent = new Intent(CartActivity.this, InvoiceActivity.class);
-        intent.putExtra("data", body.getData().getId() + "");
+        Intent intent = new Intent(CartActivity.this, CurrentOrderActivity.class);
         startActivity(intent);
     }
 

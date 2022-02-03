@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.socialcafe.R;
 import com.socialcafe.activities_fragments.activity_home.HomeActivity;
+import com.socialcafe.activities_fragments.activity_products.ProductsActivity;
 import com.socialcafe.databinding.CategoryRowBinding;
 import com.socialcafe.models.CategoryModel;
 
@@ -56,6 +57,13 @@ public class CategoryAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
             public void onClick(View v) {
                 if(context instanceof HomeActivity){
                     HomeActivity activity=(HomeActivity) context;
+                    activity.showCategory(list.get(holder.getLayoutPosition()).getId()+"");
+                }
+                else   if (context instanceof ProductsActivity) {
+
+                    ProductsActivity activity = (ProductsActivity) context;
+                    activity.category_id = 0;
+
                     activity.showCategory(list.get(holder.getLayoutPosition()).getId()+"");
                 }
             }

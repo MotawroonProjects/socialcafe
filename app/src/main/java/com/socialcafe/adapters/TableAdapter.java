@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.socialcafe.R;
 import com.socialcafe.activities_fragments.activity_cart.CartActivity;
+import com.socialcafe.activities_fragments.activity_products.TablesActivity;
 import com.socialcafe.databinding.TableRowBinding;
 import com.socialcafe.models.TableModel;
 
@@ -64,6 +65,10 @@ public class TableAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> 
             if (context instanceof CartActivity) {
                 CartActivity cartActivity = (CartActivity) context;
                 cartActivity.choose(list.get(position).getId());
+            }
+            else  if (context instanceof TablesActivity) {
+                TablesActivity tablesActivity = (TablesActivity) context;
+                tablesActivity.choose(list.get(position).getId());
             }
 
         } else {

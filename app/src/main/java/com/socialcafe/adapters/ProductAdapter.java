@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.socialcafe.R;
 import com.socialcafe.activities_fragments.activity_home.HomeActivity;
+import com.socialcafe.activities_fragments.activity_products.ProductsActivity;
 import com.socialcafe.databinding.ProductRowBinding;
 import com.socialcafe.models.ProductModel;
 
@@ -54,6 +55,9 @@ public class ProductAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             public void onClick(View v) {
                 if (context instanceof HomeActivity) {
                     HomeActivity activity = (HomeActivity) context;
+                    activity.addtocart(list.get(holder.getLayoutPosition()), holder.getLayoutPosition());
+                } else if (context instanceof ProductsActivity) {
+                    ProductsActivity activity = (ProductsActivity) context;
                     activity.addtocart(list.get(holder.getLayoutPosition()), holder.getLayoutPosition());
                 }
             }

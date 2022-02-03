@@ -1,10 +1,11 @@
-package com.socialcafe.activities_fragments.activity_home;
+package com.socialcafe.activities_fragments.activity_products;
 
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
@@ -16,6 +17,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -29,12 +31,15 @@ import com.socialcafe.activities_fragments.activity_currentorder.CurrentOrderAct
 import com.socialcafe.activities_fragments.activity_discount_day.DiscountDayActivity;
 import com.socialcafe.activities_fragments.activity_invoice.InvoiceActivity;
 import com.socialcafe.activities_fragments.activity_login.LoginActivity;
+import com.socialcafe.activities_fragments.activity_order_details.OrderDetailsActivity;
 import com.socialcafe.activities_fragments.activity_previousorder.PreviousOrderActivity;
 import com.socialcafe.adapters.HomeAdapter;
 import com.socialcafe.adapters.MarkAdapter;
+import com.socialcafe.adapters.OrderAdapter;
 import com.socialcafe.adapters.ProductAdapter;
 import com.socialcafe.adapters.ProductDetialsAdapter;
-import com.socialcafe.databinding.ActivityHomeBinding;
+import com.socialcafe.databinding.ActivityCurrentorderBinding;
+import com.socialcafe.databinding.ActivityProductsBinding;
 import com.socialcafe.language.Language;
 import com.socialcafe.models.BrandDataModel;
 import com.socialcafe.models.BrandModel;
@@ -43,9 +48,12 @@ import com.socialcafe.models.CategoryModel;
 import com.socialcafe.models.CreateOrderModel;
 import com.socialcafe.models.InvoiceModel;
 import com.socialcafe.models.ItemCartModel;
+import com.socialcafe.models.OrderDataModel;
+import com.socialcafe.models.OrderModel;
 import com.socialcafe.models.ProductDataModel;
 import com.socialcafe.models.ProductDetialsModel;
 import com.socialcafe.models.ProductModel;
+import com.socialcafe.models.SingleOrderDataModel;
 import com.socialcafe.models.StatusResponse;
 import com.socialcafe.models.UserModel;
 import com.socialcafe.preferences.Preferences;
@@ -53,24 +61,25 @@ import com.socialcafe.remote.Api;
 import com.socialcafe.share.Common;
 import com.socialcafe.tags.Tags;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 import io.paperdb.Paper;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomeActivity extends AppCompatActivity {
-    private ActivityHomeBinding binding;
+public class ProductsActivity extends AppCompatActivity {
+    private ActivityProductsBinding binding;
     private Preferences preferences;
     private UserModel userModel;
     private String lang;
     private ActionBarDrawerToggle toggle;
     private ActivityResultLauncher<Intent> launcher2;
-    private List<ProductModel>  allproduct;
+    private List<ProductModel> allproduct;
 
     private List<CategoryModel> categoryModelList;
     private HomeAdapter homeAdapter;
@@ -89,6 +98,8 @@ public class HomeActivity extends AppCompatActivity {
     private int times;
     public int category_id;
     private int check = -1;
+    private CreateOrderModel add_order_model;
+    private double total, qty, tax;
 
     protected void attachBaseContext(Context newBase) {
         Paper.init(newBase);
@@ -99,11 +110,15 @@ public class HomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_home);
+        binding = DataBindingUtil.setContentView(this, R.layout.activity_products);
+        getDataFromIntent();
         initView();
-
     }
 
+    private void getDataFromIntent() {
+        Intent intent = getIntent();
+        add_order_model = (CreateOrderModel) intent.getSerializableExtra("data");
+    }
 
 
     private void initView() {
@@ -123,7 +138,6 @@ public class HomeActivity extends AppCompatActivity {
         productids = new ArrayList<>();
         productindex = new ArrayList<>();
         preferences = Preferences.getInstance();
-        getCartItemCount();
         userModel = preferences.getUserData(this);
         homeAdapter = new HomeAdapter(categoryModelList, this);
         markAdapter = new MarkAdapter(brandModelList, this);
@@ -144,89 +158,15 @@ public class HomeActivity extends AppCompatActivity {
         lang = Paper.book().read("lang", "ar");
         binding.setLang(lang);
 
-        toggle = new ActionBarDrawerToggle(this, binding.drawar, binding.toolbar, R.string.open, R.string.close);
-//
-//        toggle.setHomeAsUpIndicator(R.drawable.ic_menu);
 
-
-        toggle.syncState();
-
-
-
-        launcher2 = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            checkAvialbilty();
-
-        });
-        binding.llCart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(HomeActivity.this, CartActivity.class);
-                startActivity(intent);
-            }
-        });
-        binding.flCart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(HomeActivity.this, CartActivity.class);
-                startActivity(intent);
-            }
-        });
-        binding.flclose3.setOnClickListener(new View.OnClickListener() {
+        binding.btnAdd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                closeSheet3();
+                calculateTotal();
             }
         });
-        binding.llInvoice.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                binding.drawar.closeDrawer(GravityCompat.START);
 
-                Intent intent = new Intent(HomeActivity.this, InvoiceActivity.class);
-                intent.putExtra("data", "0");
-                startActivity(intent);
-//                getlastInvoice();
-//                Intent intent = new Intent(HomeActivity.this, InvoiceActivity.class);
-//                startActivity(intent);
-            }
-        });
-        binding.llcashRegister.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                binding.drawar.closeDrawer(GravityCompat.START);
 
-                check = 0;
-                checkAvialbilty();
-            }
-        });
-        binding.llCoalition.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                binding.drawar.closeDrawer(GravityCompat.START);
-
-                Intent intent = new Intent(HomeActivity.this, DiscountDayActivity.class);
-                startActivity(intent);
-            }
-        });
-        binding.btnConfirm.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                String mony = binding.edtMony.getText().toString();
-                if (!mony.trim().isEmpty()) {
-                    enterMony(mony);
-                } else {
-                    binding.edtMony.setError(getResources().getString(R.string.field_req));
-                }
-            }
-        });
-        binding.lllogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                navigateToSignInActivity();
-
-            }
-        });
-        checkAvialbilty();
         if (userModel != null) {
 //            EventBus.getDefault().register(this);
 //            getNotificationCount();
@@ -250,7 +190,7 @@ public class HomeActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 List<ItemCartModel> productDetailsList;
-                CreateOrderModel add_order_model = preferences.getCartData(HomeActivity.this);
+                CreateOrderModel add_order_model = preferences.getCartData(ProductsActivity.this);
                 if (add_order_model != null) {
                     productDetailsList = add_order_model.getDetails();
                 } else {
@@ -294,15 +234,14 @@ public class HomeActivity extends AppCompatActivity {
                         productModelList.set(pos, productModel);
                         productAdapter.notifyDataSetChanged();
                     } else {
-                        Toast.makeText(HomeActivity.this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
+                        Toast.makeText(ProductsActivity.this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
                     }
 
-                    preferences.create_update_cart(HomeActivity.this, add_order_model);
-                    getCartItemCount();
+
                     closeSheet2();
 
                 } else {
-                    Toast.makeText(HomeActivity.this, getResources().getString(R.string.choose_product), Toast.LENGTH_LONG).show();
+                    Toast.makeText(ProductsActivity.this, getResources().getString(R.string.choose_product), Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -353,21 +292,7 @@ public class HomeActivity extends AppCompatActivity {
 //                }
 //            }
 //        });
-        binding.llMyOrder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(HomeActivity.this, CurrentOrderActivity.class);
-                startActivity(intent);
-            }
-        });
-        binding.llPreorder.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(HomeActivity.this, PreviousOrderActivity.class);
-                startActivity(intent);
-            }
-        });
-        getProdusts();
+
         getProdusts("0", "0", "1");
         category_id = 0;
         // binding.recviewCategory.setNestedScrollingEnabled(true);
@@ -407,23 +332,6 @@ public class HomeActivity extends AppCompatActivity {
 
     }
 
-    public void openSheet3() {
-
-        //binding.btnAddBid.setAlpha(.4f);
-        binding.expandLayout3.setExpanded(true, true);
-        //getBrands();
-    }
-
-    public void closeSheet3() {
-        // binding.btnAddBid.setAlpha(0);
-        binding.expandLayout3.collapse(true);
-        if (check == 0) {
-            check = -1;
-            Intent intent = new Intent(HomeActivity.this, CashRegisterDetialsActivity.class);
-            launcher2.launch(intent);
-        }
-
-    }
 
     private void getCategory() {
         categoryModelList.clear();
@@ -602,7 +510,7 @@ public class HomeActivity extends AppCompatActivity {
 
     @SuppressLint("NotifyDataSetChanged")
     public void getProdusts(String brand_id, String cat_id, String isfeatured) {
-        Log.e("kkkkk",userModel.getUser().getId()+"");
+        Log.e("kkkkk", userModel.getUser().getId() + "");
         productModelList.clear();
         productAdapter.notifyDataSetChanged();
         binding.progBar.setVisibility(View.VISIBLE);
@@ -624,7 +532,7 @@ public class HomeActivity extends AppCompatActivity {
                                     } else if (response.body().getStatus() == 405) {
                                         productModelList.clear();
                                         productAdapter.notifyDataSetChanged();
-                                        Toast.makeText(HomeActivity.this, getResources().getString(R.string.permisson), Toast.LENGTH_LONG).show();
+                                        Toast.makeText(ProductsActivity.this, getResources().getString(R.string.permisson), Toast.LENGTH_LONG).show();
                                     } else {
                                         productModelList.clear();
                                         productAdapter.notifyDataSetChanged();
@@ -632,13 +540,11 @@ public class HomeActivity extends AppCompatActivity {
 
                                     }
                                 }
-                            }
-                            else if (response.body().getStatus() == 405) {
+                            } else if (response.body().getStatus() == 405) {
                                 productModelList.clear();
                                 productAdapter.notifyDataSetChanged();
-                                Toast.makeText(HomeActivity.this, getResources().getString(R.string.permisson), Toast.LENGTH_LONG).show();
-                            }
-                            else {
+                                Toast.makeText(ProductsActivity.this, getResources().getString(R.string.permisson), Toast.LENGTH_LONG).show();
+                            } else {
                                 binding.tvNoData.setVisibility(View.VISIBLE);
                                 Log.e("kdkdk", response.code() + "");
                                 //  Toast.makeText(SignUpActivity.this, getString(R.string.failed), Toast.LENGTH_SHORT).show();
@@ -847,7 +753,7 @@ public class HomeActivity extends AppCompatActivity {
 
     private void updateData2(ProductDataModel body, int pos, int layoutPosition, ProductModel productModel) {
         List<ItemCartModel> productDetailsList;
-        CreateOrderModel add_order_model = preferences.getCartData(HomeActivity.this);
+        CreateOrderModel add_order_model = preferences.getCartData(ProductsActivity.this);
         if (add_order_model != null) {
             productDetailsList = add_order_model.getDetails();
         } else {
@@ -875,8 +781,7 @@ public class HomeActivity extends AppCompatActivity {
                 productModel.setCount(productDetails.getQty());
                 productModelList.set(layoutPosition, productModel);
                 productAdapter.notifyDataSetChanged();
-                preferences.create_update_cart(HomeActivity.this, add_order_model);
-                getCartItemCount();
+                preferences.create_update_cart(ProductsActivity.this, add_order_model);
             } else {
                 Toast.makeText(this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
                 productModel.setCount(productDetails.getQty());
@@ -917,8 +822,7 @@ public class HomeActivity extends AppCompatActivity {
                 productModel.setCount(productDetails.getQty());
                 productModelList.set(layoutPosition, productModel);
                 productAdapter.notifyDataSetChanged();
-                preferences.create_update_cart(HomeActivity.this, add_order_model);
-                getCartItemCount();
+                preferences.create_update_cart(ProductsActivity.this, add_order_model);
             } else {
                 Toast.makeText(this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
                 productModel.setCount(productDetails.getQty());
@@ -941,13 +845,13 @@ public class HomeActivity extends AppCompatActivity {
 //                    openSheet2(productModel, pos);
 //
 //                } else {
-//                    Toast.makeText(HomeActivity.this, getResources().getString(R.string.no_products), Toast.LENGTH_LONG).show();
+//                    Toast.makeText(ProductsActivity.this, getResources().getString(R.string.no_products), Toast.LENGTH_LONG).show();
 //
 //                }
 //            }
 //        } else {
 //            List<ItemCartModel> productDetailsList;
-//            CreateOrderModel add_order_model = preferences.getCartData(HomeActivity.this);
+//            CreateOrderModel add_order_model = preferences.getCartData(ProductsActivity.this);
 //            if (add_order_model != null) {
 //                productDetailsList = add_order_model.getDetails();
 //            } else {
@@ -985,7 +889,7 @@ public class HomeActivity extends AppCompatActivity {
 //                productModel.setCount(1);
 //                productModelList.set(pos, productModel);
 //                productAdapter.notifyDataSetChanged();
-//                preferences.create_update_cart(HomeActivity.this, add_order_model);
+//                preferences.create_update_cart(ProductsActivity.this, add_order_model);
 //                getCartItemCount();
 //            }
 //
@@ -1027,7 +931,6 @@ public class HomeActivity extends AppCompatActivity {
     public void addtocart(ProductModel productModel, int layoutPosition) {
         productids.clear();
         List<ItemCartModel> productDetailsList;
-        CreateOrderModel add_order_model = preferences.getCartData(HomeActivity.this);
         // productDetailsList = new ArrayList<>();
         if (add_order_model != null) {
             productDetailsList = add_order_model.getDetails();
@@ -1049,73 +952,73 @@ public class HomeActivity extends AppCompatActivity {
             }
         }
 
-        if ((productModel.getCategory().getMake().equals("make")||productModel.getCategory().getMake().equals("both"))&&productModel.getCategory().getMake_place().equals("in")) {
+        if ((productModel.getCategory().getMake().equals("make") || productModel.getCategory().getMake().equals("both")) && productModel.getCategory().getMake_place().equals("in")) {
             // Log.e("ssss", "ssssss");
-                if (productModel.getCan_make() > 0) {
-                    if (pos == -1) {
-                        ItemCartModel productDetails = new ItemCartModel();
-                        productDetails.setQty(1);
-                        productDetails.setImage(productModel.getImage());
-                        productDetails.setName(productModel.getName());
-                        productDetails.setNet_unit_price(productModel.getPrice());
-                        productDetails.setProduct_id(productModel.getId());
-                        productDetails.setProduct_batch_id("");
-                        productDetails.setProduct_code(productModel.getCode());
-                        productDetails.setDiscount(0);
-                        // productDetails.setCategory_id(productModel.getCategory_id());
-                        productDetails.setStock((int) productModel.getCan_make());
+            if (productModel.getCan_make() > 0) {
+                if (pos == -1) {
+                    ItemCartModel productDetails = new ItemCartModel();
+                    productDetails.setQty(1);
+                    productDetails.setImage(productModel.getImage());
+                    productDetails.setName(productModel.getName());
+                    productDetails.setNet_unit_price(productModel.getPrice());
+                    productDetails.setProduct_id(productModel.getId());
+                    productDetails.setProduct_batch_id("");
+                    productDetails.setProduct_code(productModel.getCode());
+                    productDetails.setDiscount(0);
+                    // productDetails.setCategory_id(productModel.getCategory_id());
+                    productDetails.setStock((int) productModel.getCan_make());
 
+                    if (productModel.getTax() != null) {
+                        productDetails.setTax((productModel.getPrice() * productModel.getTax().getRate()) / 100);
+                        productDetails.setTax_rate(productModel.getTax().getRate());
+                        productDetails.setSubtotal((((productModel.getPrice() * productModel.getTax().getRate()) / 100) + productModel.getPrice()) * productDetails.getQty());
+
+                    } else {
+                        productDetails.setSubtotal(productModel.getPrice() * productDetails.getQty());
+
+                    }
+                    if (productModel.getUnit() != null) {
+                        productDetails.setSale_unit(productModel.getUnit().getUnit_name());
+                    } else {
+                        productDetails.setSale_unit("n/a");
+                    }
+                    // productDetails.setProducts_id(Arrays.toString(productids.toArray()));
+                    productDetailsList.add(productDetails);
+                    add_order_model.setDetails(productDetailsList);
+                    productModel.setCount(1);
+
+                } else {
+                    ItemCartModel productDetails = productDetailsList.get(pos);
+                    if (productDetails.getQty() + 1 <= productModel.getCan_make()) {
+                        Log.e("jjjjjjj", productDetails.getQty() + " " + productModel.getCan_make());
+
+                        productDetails.setQty(1 + productDetails.getQty());
+                        productDetails.setNet_unit_price(productModel.getPrice());
                         if (productModel.getTax() != null) {
-                            productDetails.setTax((productModel.getPrice() * productModel.getTax().getRate()) / 100);
-                            productDetails.setTax_rate(productModel.getTax().getRate());
                             productDetails.setSubtotal((((productModel.getPrice() * productModel.getTax().getRate()) / 100) + productModel.getPrice()) * productDetails.getQty());
 
                         } else {
                             productDetails.setSubtotal(productModel.getPrice() * productDetails.getQty());
 
                         }
-                        if (productModel.getUnit() != null) {
-                            productDetails.setSale_unit(productModel.getUnit().getUnit_name());
-                        } else {
-                            productDetails.setSale_unit("n/a");
-                        }
-                        // productDetails.setProducts_id(Arrays.toString(productids.toArray()));
-                        productDetailsList.add(productDetails);
+                        productDetailsList.remove(pos);
+                        productDetailsList.add(pos, productDetails);
+
                         add_order_model.setDetails(productDetailsList);
-                        productModel.setCount(1);
-
+                        productModel.setCount(productDetails.getQty());
                     } else {
-                        ItemCartModel productDetails = productDetailsList.get(pos);
-                        if (productDetails.getQty() + 1 <= productModel.getCan_make()) {
-                            Log.e("jjjjjjj", productDetails.getQty() + " " + productModel.getCan_make());
+                        Toast.makeText(ProductsActivity.this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
 
-                            productDetails.setQty(1 + productDetails.getQty());
-                            productDetails.setNet_unit_price(productModel.getPrice());
-                            if (productModel.getTax() != null) {
-                                productDetails.setSubtotal((((productModel.getPrice() * productModel.getTax().getRate()) / 100) + productModel.getPrice()) * productDetails.getQty());
-
-                            } else {
-                                productDetails.setSubtotal(productModel.getPrice() * productDetails.getQty());
-
-                            }
-                            productDetailsList.remove(pos);
-                            productDetailsList.add(pos, productDetails);
-
-                            add_order_model.setDetails(productDetailsList);
-                            productModel.setCount(productDetails.getQty());
-                        } else {
-                            Toast.makeText(HomeActivity.this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
-
-                        }
                     }
-                    productModelList.set(layoutPosition, productModel);
-                    productAdapter.notifyDataSetChanged();
-                    //accessDatabase.udatefirststock(productModel.getFirst_stock(), this);
-                    //  accessDatabase.udateproduct(productModel, this);
-
-                } else {
-                    Toast.makeText(HomeActivity.this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
                 }
+                productModelList.set(layoutPosition, productModel);
+                productAdapter.notifyDataSetChanged();
+                //accessDatabase.udatefirststock(productModel.getFirst_stock(), this);
+                //  accessDatabase.udateproduct(productModel, this);
+
+            } else {
+                Toast.makeText(ProductsActivity.this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
+            }
 
 
         } else {
@@ -1174,7 +1077,7 @@ public class HomeActivity extends AppCompatActivity {
                         add_order_model.setDetails(productDetailsList);
                         productModel.setCount(productDetails.getQty());
                     } else {
-                        Toast.makeText(HomeActivity.this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
+                        Toast.makeText(ProductsActivity.this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
 
                     }
                 }
@@ -1184,7 +1087,7 @@ public class HomeActivity extends AppCompatActivity {
 //                accessDatabase.udateproduct(productModel, this);
 
             } else {
-                Toast.makeText(HomeActivity.this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
+                Toast.makeText(ProductsActivity.this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
             }
 
         }
@@ -1194,12 +1097,9 @@ public class HomeActivity extends AppCompatActivity {
             productAdapter.notifyDataSetChanged();
         }
         if (productDetailsList.size() > 0) {
-            preferences.create_update_cart(HomeActivity.this, add_order_model);
-            getCartItemCount();
-        }
-        else {
+            preferences.create_update_cart(ProductsActivity.this, add_order_model);
+        } else {
             preferences.clearCart(this);
-            getCartItemCount();
         }
 
     }
@@ -1223,94 +1123,6 @@ public class HomeActivity extends AppCompatActivity {
 //        return false;
 //    }
 
-    public void getCartItemCount() {
-        if (preferences.getCartData(this) != null && preferences.getCartData(this).getDetails() != null) {
-            //  view.onCartCountUpdate(preferences.getCartData(context).getCartModelList().size());
-            binding.setCartcount(preferences.getCartData(this).getDetails().size());
-
-        } else {
-            binding.setCartcount(0);
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (preferences != null) {
-            getCartItemCount();
-            category_id = 0;
-
-            getProdusts("0", "0", "1");
-        }
-    }
-
-    public void getlastInvoice() {
-
-        ProgressDialog dialog = Common.createProgressDialog(this, getString(R.string.wait));
-        dialog.setCancelable(false);
-        dialog.show();
-
-
-        Api.getService(Tags.base_url)
-                .getLatestSale(userModel.getUser().getId() + "")
-                .enqueue(new Callback<InvoiceModel>() {
-                    @Override
-                    public void onResponse(Call<InvoiceModel> call, Response<InvoiceModel> response) {
-                        dialog.dismiss();
-                        if (response.isSuccessful() && response.body() != null) {
-                            if (response.body().getStatus() == 200) {
-                                if (response.body().getData() != null) {
-                                    try {
-                                        binding.drawar.closeDrawer(GravityCompat.START);
-                                        Intent myIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(response.body().getData()));
-                                        startActivity(myIntent);
-                                    } catch (ActivityNotFoundException e) {
-//                                        Toast.makeText(this, "No application can handle this request."
-//                                                + " Please install a webbrowser",  Toast.LENGTH_LONG).show();
-                                        e.printStackTrace();
-                                    }
-//                                    Intent intent = new Intent(HomeActivity.this, InvoiceActivity.class);
-//                                    intent.putExtra("data", response.body().getData());
-//                                    startActivity(intent);
-                                } else if (response.body().getStatus() == 400) {
-                                    Toast.makeText(HomeActivity.this, getResources().getString(R.string.no_invoice), Toast.LENGTH_SHORT).show();
-
-                                }
-
-                            }
-
-                        } else {
-                            if (response.code() == 500) {
-                                Toast.makeText(HomeActivity.this, "Server Error", Toast.LENGTH_SHORT).show();
-                            } else {
-                                Log.e("ERROR", response.message() + "");
-
-                                //     Toast.makeText(HomeActivity.this, getString(R.string.failed), Toast.LENGTH_SHORT).show();
-                            }
-
-
-                        }
-                    }
-
-                    @Override
-                    public void onFailure(Call<InvoiceModel> call, Throwable t) {
-                        try {
-                            dialog.dismiss();
-                            if (t.getMessage() != null) {
-                                Log.e("msg_category_error", t.getMessage() + "__");
-
-                                if (t.getMessage().toLowerCase().contains("failed to connect") || t.getMessage().toLowerCase().contains("unable to resolve host")) {
-                                    // Toast.makeText(SubscriptionActivity.this, getString(R.string.something), Toast.LENGTH_SHORT).show();
-                                } else {
-                                    //Toast.makeText(SubscriptionActivity.this, getString(R.string.failed), Toast.LENGTH_SHORT).show();
-                                }
-                            }
-                        } catch (Exception e) {
-                            Log.e("Error", e.getMessage() + "__");
-                        }
-                    }
-                });
-    }
 
 //    private void getProdustDrink(ProductModel productModel, int pos, int layoutpos, int amount) {
 //
@@ -1386,7 +1198,7 @@ public class HomeActivity extends AppCompatActivity {
 //    private void updateDataDrink(ProductDataModel body, int pos, int layoutPosition) {
 //        if (body.getProduct().getQty() > 0) {
 //            List<ItemCartModel> productDetailsList;
-//            CreateOrderModel add_order_model = preferences.getCartData(HomeActivity.this);
+//            CreateOrderModel add_order_model = preferences.getCartData(ProductsActivity.this);
 //            if (add_order_model != null) {
 //                productDetailsList = add_order_model.getDetails();
 //            } else {
@@ -1424,7 +1236,7 @@ public class HomeActivity extends AppCompatActivity {
 //                productModel.setCount(1);
 //                productModelList.set(layoutPosition, productModel);
 //                productAdapter.notifyDataSetChanged();
-//                preferences.create_update_cart(HomeActivity.this, add_order_model);
+//                preferences.create_update_cart(ProductsActivity.this, add_order_model);
 //                getCartItemCount();
 //
 //
@@ -1448,7 +1260,7 @@ public class HomeActivity extends AppCompatActivity {
 //                    productModel.setCount(productDetails.getQty());
 //                    productModelList.set(layoutPosition, productModel);
 //                    productAdapter.notifyDataSetChanged();
-//                    preferences.create_update_cart(HomeActivity.this, add_order_model);
+//                    preferences.create_update_cart(ProductsActivity.this, add_order_model);
 //                    getCartItemCount();
 //                }
 //
@@ -1457,7 +1269,7 @@ public class HomeActivity extends AppCompatActivity {
 //            Toast.makeText(this, getResources().getString(R.string.unvailable), Toast.LENGTH_LONG).show();
 //            if (pos != -1) {
 //                List<ItemCartModel> productDetailsList;
-//                CreateOrderModel add_order_model = preferences.getCartData(HomeActivity.this);
+//                CreateOrderModel add_order_model = preferences.getCartData(ProductsActivity.this);
 //                if (add_order_model != null) {
 //                    productDetailsList = add_order_model.getDetails();
 //                } else {
@@ -1473,147 +1285,6 @@ public class HomeActivity extends AppCompatActivity {
 //        }
 //    }
 
-    public void checkAvialbilty() {
-        ProgressDialog dialog = Common.createProgressDialog(this, getString(R.string.wait));
-        dialog.setCancelable(false);
-        dialog.show();
-        Api.getService(Tags.base_url)
-                .checkAvilabilty(userModel.getUser().getId() + "", userModel.getUser().getWarehouse_id() + "")
-                .enqueue(new Callback<StatusResponse>() {
-                    @Override
-                    public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
-                        dialog.dismiss();
-                        if (response.isSuccessful()) {
-
-                            if (response.body().getStatus() == 200) {
-                                if (check == 0) {
-                                    Intent intent = new Intent(HomeActivity.this, CashRegisterDetialsActivity.class);
-                                    launcher2.launch(intent);
-                                }
-
-                            } else if (response.body().getStatus() == 1000) {
-                                openSheet3();
-                                //  Log.e("kdkdk", response.code() + "");
-                                //  Toast.makeText(SignUpActivity.this, getString(R.string.failed), Toast.LENGTH_SHORT).show();
-
-                            }
-
-
-                        } else {
-
-
-                            switch (response.code()) {
-                                case 500:
-                                    //   Toast.makeText(SignUpActivity.this, "Server Error", Toast.LENGTH_SHORT).show();
-                                    break;
-                                default:
-                                    //   Toast.makeText(SignUpActivity.this, getString(R.string.failed), Toast.LENGTH_SHORT).show();
-                                    break;
-                            }
-                            try {
-                                Log.e("error_code", response.code() + "_");
-                            } catch (NullPointerException e) {
-
-                            }
-                        }
-
-
-                    }
-
-                    @Override
-                    public void onFailure(Call<StatusResponse> call, Throwable t) {
-                        try {
-                            dialog.dismiss();
-//                            binding.arrow.setVisibility(View.VISIBLE);
-//
-//                            binding.progBar.setVisibility(View.GONE);
-                            if (t.getMessage() != null) {
-                                Log.e("error", t.getMessage());
-                                if (t.getMessage().toLowerCase().contains("failed to connect") || t.getMessage().toLowerCase().contains("unable to resolve host")) {
-                                    //     Toast.makeText(SignUpActivity.this, getString(R.string.something), Toast.LENGTH_SHORT).show();
-                                } else if (t.getMessage().toLowerCase().contains("socket") || t.getMessage().toLowerCase().contains("canceled")) {
-                                } else {
-                                    //  Toast.makeText(SignUpActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            }
-
-                        } catch (Exception e) {
-
-                        }
-                    }
-                });
-
-    }
-
-    public void enterMony(String mony) {
-        ProgressDialog dialog = Common.createProgressDialog(this, getString(R.string.wait));
-        dialog.setCancelable(false);
-        dialog.show();
-        Api.getService(Tags.base_url)
-                .enterMony(userModel.getUser().getId() + "", userModel.getUser().getWarehouse_id() + "", mony)
-                .enqueue(new Callback<StatusResponse>() {
-                    @Override
-                    public void onResponse(Call<StatusResponse> call, Response<StatusResponse> response) {
-                        dialog.dismiss();
-                        if (response.isSuccessful()) {
-
-                            if (response.body().getStatus() == 200) {
-                                closeSheet3();
-                            }
-
-
-                        } else {
-
-
-                            switch (response.code()) {
-                                case 500:
-                                    //   Toast.makeText(SignUpActivity.this, "Server Error", Toast.LENGTH_SHORT).show();
-                                    break;
-                                default:
-                                    //   Toast.makeText(SignUpActivity.this, getString(R.string.failed), Toast.LENGTH_SHORT).show();
-                                    break;
-                            }
-                            try {
-                                Log.e("error_code", response.code() + "_");
-                            } catch (NullPointerException e) {
-
-                            }
-                        }
-
-
-                    }
-
-                    @Override
-                    public void onFailure(Call<StatusResponse> call, Throwable t) {
-                        try {
-                            dialog.dismiss();
-//                            binding.arrow.setVisibility(View.VISIBLE);
-//
-//                            binding.progBar.setVisibility(View.GONE);
-                            if (t.getMessage() != null) {
-                                Log.e("error", t.getMessage());
-                                if (t.getMessage().toLowerCase().contains("failed to connect") || t.getMessage().toLowerCase().contains("unable to resolve host")) {
-                                    //     Toast.makeText(SignUpActivity.this, getString(R.string.something), Toast.LENGTH_SHORT).show();
-                                } else if (t.getMessage().toLowerCase().contains("socket") || t.getMessage().toLowerCase().contains("canceled")) {
-                                } else {
-                                    //  Toast.makeText(SignUpActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            }
-
-                        } catch (Exception e) {
-
-                        }
-                    }
-                });
-
-    }
-
-    public void navigateToSignInActivity() {
-        preferences.create_update_userdata(this, null);
-        Intent intent = new Intent(this, LoginActivity.class);
-        startActivity(intent);
-        finish();
-    }
 
     @SuppressLint("NotifyDataSetChanged")
     public void getProdusts() {
@@ -1646,7 +1317,7 @@ public class HomeActivity extends AppCompatActivity {
                                 }
                             } else if (response.body().getStatus() == 401) {
 
-                                //      Toast.makeText(HomeActivity.this, getResources().getString(R.string.permisson), Toast.LENGTH_LONG).show();
+                                //      Toast.makeText(ProductsActivity.this, getResources().getString(R.string.permisson), Toast.LENGTH_LONG).show();
                                 //  progressDialog.dismiss();
                             } else {
                                 //   binding.tvNoData.setVisibility(View.VISIBLE);
@@ -1685,7 +1356,7 @@ public class HomeActivity extends AppCompatActivity {
 //                            binding.progBar.setVisibility(View.GONE);
 //                            binding.tvNoData.setVisibility(View.VISIBLE);
 //                            progressDialog.dismiss();
-                            //  accessDatabase.getProduct(HomeActivity.this, isfeatured, "featured");
+                            //  accessDatabase.getProduct(ProductsActivity.this, isfeatured, "featured");
 
 //                            binding.arrow.setVisibility(View.VISIBLE);
 //
@@ -1707,6 +1378,100 @@ public class HomeActivity extends AppCompatActivity {
                     }
                 });
 
+    }
+
+    public void createOrder() {
+        try {
+            ProgressDialog dialog = Common.createProgressDialog(this, getString(R.string.wait));
+            dialog.setCancelable(false);
+            dialog.setCanceledOnTouchOutside(false);
+            dialog.show();
+
+
+            Api.getService(Tags.base_url)
+                    .createOrder(add_order_model)
+                    .enqueue(new Callback<SingleOrderDataModel>() {
+                        @Override
+                        public void onResponse(Call<SingleOrderDataModel> call, Response<SingleOrderDataModel> response) {
+                            dialog.dismiss();
+                            if (response.isSuccessful()) {
+
+
+                                if (response.body() != null && response.body().getData() != null) {
+                                    add_order_model.setSale_id(response.body().getData().getId());
+                                    Intent intent = getIntent();
+                                    intent.putExtra("data", add_order_model);
+                                    setResult(RESULT_OK, intent);
+                                    finish();
+                                    // navigateToOrderDetialsActivity(response.body());
+
+                                }
+
+                            } else {
+                                dialog.dismiss();
+                                try {
+                                    Log.e("error_code", response.errorBody().string());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+
+                                if (response.code() == 500) {
+                                    // Toast.makeText(CheckoutActivity.this, "Server Error", Toast.LENGTH_SHORT).show();
+
+
+                                } else {
+                                    //Toast.makeText(CheckoutActivity.this, getString(R.string.failed), Toast.LENGTH_SHORT).show();
+
+                                    try {
+
+                                        Log.e("error", response.code() + "_" + response.errorBody().string());
+                                    } catch (IOException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(Call<SingleOrderDataModel> call, Throwable t) {
+                            try {
+                                dialog.dismiss();
+                                if (t.getMessage() != "") {
+                                    Log.e("error", t.getMessage());
+                                    if (t.getMessage().toLowerCase().contains("failed to connect") || t.getMessage().toLowerCase().contains("unable to resolve host")) {
+                                        //      Toast.makeText(CheckoutActivity.this, R.string.something, Toast.LENGTH_SHORT).show();
+                                    } else {
+                                        //    Toast.makeText(CheckoutActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                            } catch (Exception e) {
+                            }
+                        }
+                    });
+        } catch (Exception e) {
+
+        }
+    }
+
+    private void calculateTotal() {
+        total = 0;
+        tax = 0;
+        qty = 0;
+        for (ItemCartModel model : add_order_model.getDetails()) {
+
+            total += (model.getNet_unit_price() + ((model.getNet_unit_price() * model.getTax_rate()) / 100)) * model.getQty();
+            tax += model.getTax();
+            qty += model.getQty();
+        }
+        add_order_model.setTotal_price(total);
+        add_order_model.setTotal_tax(tax);
+        add_order_model.setTotal_discount("0");
+        add_order_model.setTotal_qty(qty + "");
+        add_order_model.setItem(add_order_model.getDetails().size() + "");
+        add_order_model.setGrand_total(total - ((total * add_order_model.getOrder_discount()) / 100) + add_order_model.getOrder_tax());
+
+        createOrder();
     }
 
 }

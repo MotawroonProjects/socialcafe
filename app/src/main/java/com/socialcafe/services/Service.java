@@ -165,10 +165,10 @@ public interface Service {
             @Query("user_id") String user_id
 
     );
-    @FormUrlEncoded
-    @POST("api/updateStatus")
+
+    @GET("api/endMake")
     Call<StatusResponse> changeStatus(
-            @Field("order_id") String order_id
+            @Query("sale_id") String sale_id
 
 
     );

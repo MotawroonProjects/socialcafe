@@ -200,7 +200,7 @@
                         android:layout_gravity="center"
 
                         android:padding="3dp"
-                        android:text='@{(model.net_unit_price*model.qty)+""}'
+                        android:text='@{(String.format("%.2f",model.net_unit_price*model.qty))}'
                         android:textColor="@color/gray17"
                         android:textSize="13sp"
 

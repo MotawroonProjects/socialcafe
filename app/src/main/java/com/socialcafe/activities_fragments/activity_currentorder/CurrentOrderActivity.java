@@ -15,6 +15,8 @@ import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.socialcafe.R;
+import com.socialcafe.activities_fragments.activity_cart.CartActivity;
+import com.socialcafe.activities_fragments.activity_invoice.InvoiceActivity;
 import com.socialcafe.activities_fragments.activity_order_details.OrderDetailsActivity;
 import com.socialcafe.adapters.OrderAdapter;
 import com.socialcafe.databinding.ActivityCurrentorderBinding;
@@ -87,9 +89,8 @@ public class CurrentOrderActivity extends AppCompatActivity {
         getData();
         binding.swipeRefresh.setOnRefreshListener(this::getData);
         launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-            if (result.getResultCode() == RESULT_OK) {
                 getData();
-            }
+
         });
 
     }
@@ -106,6 +107,7 @@ public class CurrentOrderActivity extends AppCompatActivity {
             binding.tvNoData.setVisibility(View.VISIBLE);
             return;
         }
+        Log.e("llll",userModel.getUser().getId()+"");
 
         Api.getService(Tags.base_url).getOrders(userModel.getUser().getId()+"").
                 enqueue(new Callback<OrderDataModel>() {
@@ -173,6 +175,7 @@ public class CurrentOrderActivity extends AppCompatActivity {
 
 
     public void endorder(String id) {
+
         Api.getService(Tags.base_url).changeStatus(id + "")
                 .enqueue(new Callback<StatusResponse>() {
                     @Override
@@ -180,8 +183,7 @@ public class CurrentOrderActivity extends AppCompatActivity {
                         binding.progBar.setVisibility(View.GONE);
 
                         if (response.isSuccessful()) {
-                            getData();
-
+                          showInvoice(id);
 
                         } else {
 
@@ -219,9 +221,15 @@ public class CurrentOrderActivity extends AppCompatActivity {
                 });
     }
 
+    private void showInvoice(String id) {
+        Intent intent = new Intent(CurrentOrderActivity.this, InvoiceActivity.class);
+        intent.putExtra("data", id);
+        launcher.launch(intent);
+    }
+
     public void showdetials(OrderModel orderModel) {
         Intent intent=new Intent(this, OrderDetailsActivity.class);
         intent.putExtra("data",orderModel);
-        startActivity(intent);
+        launcher.launch(intent);
     }
 }
